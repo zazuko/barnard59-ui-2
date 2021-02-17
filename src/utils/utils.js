@@ -31,7 +31,7 @@ function getIdentifiers (graph) {
     .has(ns.rdf.type, ns.p.Pipeline)
     .forEach(pipeline => {
       const pXML = doc
-        .ele('block', { type: 'b:pipeline' })
+        .ele('block', { type: 'p:Pipeline' })
         .ele('field', { name: 'NAME' })
         .txt(pipeline.value)
         .up()
@@ -47,7 +47,7 @@ function getIdentifiers (graph) {
       variables
         .forEach((variable, index, { length: lastIndex }) => {
           vXML = vXML
-            .ele('block', { type: 'b:variable' })
+            .ele('block', { type: 'p:Variable' })
             .ele('field', { name: 'NAME' })
             .txt(variable.name)
             .up()
@@ -69,14 +69,39 @@ function getIdentifiers (graph) {
           const implementedBy = step.out(ns.code.implementedBy)
           const codeLink = implementedBy.out(ns.code.link)
           const identifier = codeLink.term
+          const args = Array.from(step.out(ns.code.arguments).list())
 
           const [, ...operationParts] = identifier.value.split(':')
           const operationName = operationParts.join(':')
           sXML = sXML
-            .ele('block', { type: 'b:step' })
+            .ele('block', { type: 'p:Step' })
+            .ele('field', { name: 'NAME' })
+            .txt(step.term.value)
+            .up()
             .ele('field', { name: 'OPERATION' })
             .txt(operationName)
             .up()
+
+          const op = sXML
+          args
+            .forEach((arg) => {
+              const datatype = arg.term.datatype
+              if (datatype.equals(ns.p.VariableName)) {
+                op
+                  .ele('value', { name: 'ARGUMENTS' })
+                  .ele('block', { type: 'p:VariableName' })
+                  .ele('field', { name: 'VARIABLENAME' })
+                  .txt(arg.term.value)
+                  .up()
+              } else if (datatype.equals(ns.code.EcmaScript)) {
+                op
+                  .ele('value', { name: 'ARGUMENTS' })
+                  .ele('block', { type: 'code:EcmaScript' })
+                  .ele('field', { name: 'ECMASCRIPTCODE' })
+                  .txt(arg.term.value)
+                  .up()
+              }
+            })
           if (index < lastIndex - 1) {
             sXML = sXML.ele('next')
           }

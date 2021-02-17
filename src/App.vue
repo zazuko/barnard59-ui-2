@@ -34,19 +34,13 @@ const ttl = `
       p:name "url" ;
       p:value "http://worldtimeapi.org/api/timezone/etc/UTC" ;
     ] ,
-    <dateContext1>,
-    <dateContext2>
+    <dateContext>
   ] ;
   p:steps <steps> .
 
-<dateContext1>
+<dateContext>
   a p:Variable;
   p:name "context" ;
-  p:value """{"date\":"http://purl.org/dc/elements/1.1/date"}""" .
-
-<dateContext2>
-  a p:Variable;
-  p:name "context 2" ;
   p:value """{"date\":"http://purl.org/dc/elements/1.1/date"}""" .
 
 <steps>
@@ -98,16 +92,22 @@ export default {
           },
         toolbox:
         `<xml>
-          <category name="B59" colour="%{BKY_LOOPS_HUE}">
-            <block type="b:pipeline">
+          <category name="Pipeline" colour="%{BKY_LOOPS_HUE}">
+            <block type="p:Pipeline">
               <field name="NAME">my-pipeline</field>
             </block>
-            <block type="b:step">
+            <block type="p:Step">
               <field name="OPERATION">barnard59-base#map</field>
             </block>
-            <block type="b:variable">
+            <block type="p:Variable">
               <field name="NAME">url</field>
               <field name="VALUE">http://worldtimeapi.org/api/timezone/etc/UTC</field>
+            </block>
+            <block type="p:VariableName">
+              <field name="VARIABLENAME">variableName</field>
+            </block>
+            <block type="code:EcmaScript">
+              <field name="ECMASCRIPTCODE">(x) => x * 2</field>
             </block>
           </category>
         </xml>`
@@ -137,7 +137,7 @@ export default {
     async parseTurtle () {
       const xml = await parseTurtle(this.code)
       const strXML = xml.end({ prettyPrint: true })
-      console.log(strXML)
+      // console.log(strXML)
 
       const dom = Blockly.Xml.textToDom(strXML)
       Blockly.mainWorkspace.clear()
