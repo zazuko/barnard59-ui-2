@@ -108,13 +108,11 @@ const toolbox = `
     <block type="code:EcmaScript">
       <field name="ECMASCRIPTCODE">(x) => x * 2</field>
     </block>
-    <block type="variables_list"></block>
   </category>
-  <category name="Variables" custom="CREATE_TYPED_VARIABLE" colour="%{BKY_VARIABLES_HUE}">
-  <block type="vars_set">
-    <field name="VAR_SET" variabletype="pVariable"></field>
-  </block>
+  <category name="Lists">
+    <block type="plists_create_with"></block>
   </category>
+  <category name="Variables" custom="CREATE_TYPED_VARIABLE" colour="%{BKY_VARIABLES_HUE}"></category>
 </xml>
 `
 
@@ -126,7 +124,7 @@ export default {
   mounted () {
     const workspace = this.$refs.main.workspace
     workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout)
-    const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'pVariable'], ['p:Variable', 'pVariable']])
+    const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'p:Variable'], ['p:Variable', 'p:Variable']])
     typedVarModal.init()
   },
   data () {
@@ -168,7 +166,7 @@ export default {
     async parseTurtle () {
       const xml = await parseTurtle(this.code)
       const strXML = xml.end({ prettyPrint: true })
-      // console.log(strXML)
+      console.log(strXML)
 
       const dom = Blockly.Xml.textToDom(strXML)
       Blockly.mainWorkspace.clear()

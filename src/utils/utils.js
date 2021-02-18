@@ -26,6 +26,7 @@ export async function parseTurtle (code) {
 
 function getIdentifiers (graph) {
   const doc = create().ele('https://developers.google.com/blockly/xml', 'xml')
+  const rootVarXML = doc.ele('variables')
 
   graph
     .has(ns.rdf.type, ns.p.Pipeline)
@@ -46,26 +47,26 @@ function getIdentifiers (graph) {
           value: variable.out(ns.p.value).value
         }))
 
-      let vXML = pXML
+      const vXML = pXML
         .ele('value', { name: 'VARIABLES' })
-        .ele('block', { type: 'variables_list' })
-        .ele('statement', { name: 'STACK' })
+        .ele('block', { type: 'plists_create_with' })
+        .ele('mutation', { items: `${variables.length}` })
+        .up()
 
       variables
-        .forEach((variable, index, { length: lastIndex }) => {
-          vXML = vXML
-            .ele('block', { type: 'p:Variable' })
-            .ele('field', { name: 'NAME' })
-            .txt(variable.name)
-            .up()
-            .ele('data')
-            .txt(variable.iri)
+        .forEach((variable, index) => {
+          rootVarXML.ele('variable', { type: 'p:Variable' }).txt(variable.name)
+          doc.ele('block', { type: 'variables_set_dynamic' })
+            .ele('field', { name: 'VAR', variableType: 'p:Variable' }).txt(variable.name)
             .up()
             .ele('field', { name: 'VALUE' }).txt(variable.value)
             .up()
-          if (index < lastIndex - 1) {
-            vXML = vXML.ele('next')
-          }
+            .ele('data').txt(variable.iri)
+          vXML
+            .ele('value', { name: `ADD${index}` })
+            .ele('block', { type: 'variables_get_dynamic' })
+            .ele('field', { name: 'VAR', variabletype: 'p:Variable' })
+            .txt(variable.name)
         })
 
       const steps = Array.from(pipeline
