@@ -6,15 +6,14 @@ Blockly.Blocks['p:Pipeline'] = {
       .appendField('Pipeline')
       .appendField(new Blockly.FieldTextInput('Name'), 'NAME')
     this.appendDummyInput()
-    this.appendStatementInput('VARIABLES')
-      .setCheck(['p:Variable'])
+    this.appendValueInput('VARIABLES')
+      .setCheck(['variables_list'])
       .appendField('variables')
     this.appendStatementInput('STEPLIST')
       .setCheck(['p:Step'])
       .appendField('steps')
-    // this.setNextStatement(true, ['String'])
     this.setColour(230)
-    this.setTooltip('buy id')
+    this.setTooltip('hey')
     this.setHelpUrl('https://example.com')
     this.setPreviousStatement(true, ['p:Pipeline'])
     this.setNextStatement(true, ['p:Pipeline'])
@@ -64,11 +63,24 @@ Blockly.Blocks['p:Step'] = {
       .appendField('Arguments')
       .setCheck(['p:VariableName', 'code:EcmaScript'])
 
-    // this.setNextStatement(true, ['String'])
     this.setColour(5)
     this.setPreviousStatement(true, ['p:Step'])
     this.setNextStatement(true, ['p:Step'])
-    // this.setOutput(true, 'Step')
+  }
+}
+
+Blockly.Blocks.variables_list = {
+  init () {
+    this.setStyle('list_blocks')
+    this.appendDummyInput()
+      .appendField('variables list')
+    this.setOutput(true, ['variables_list'])
+    this.appendStatementInput('STACK')
+      .setCheck(['p:Variable'])
+    // this.setPreviousStatement(true, ['p:Variable'])
+    this.setNextStatement(true, ['p:Variable'])
+    this.setTooltip(Blockly.Msg.LISTS_CREATE_WITH_CONTAINER_TOOLTIP)
+    this.contextMenu = false
   }
 }
 
@@ -85,6 +97,7 @@ Blockly.Blocks['p:Variable'] = {
       .appendField(new Blockly.FieldTextInput('Value'), 'VALUE')
     this.setPreviousStatement(true, ['p:Variable'])
     this.setNextStatement(true, ['p:Variable'])
+    this.data = 'variable IRI'
   }
 }
 
@@ -106,5 +119,29 @@ Blockly.Blocks['code:EcmaScript'] = {
       .appendField(new Blockly.FieldTextInput('Code'), 'ECMASCRIPTCODE')
     this.setInputsInline(true)
     this.setOutput(true, ['code:EcmaScript'])
+  }
+}
+
+// Block for variable getter.
+Blockly.Blocks.variables_get_pVariable = {
+  init: function () {
+    this.appendDummyInput()
+      .appendField(new Blockly.FieldVariable(
+        'VAR_NAME', ['p:Variable'], 'p:Variable'), 'FIELD_NAME')
+    this.setOutput(true, 'p:Variable')
+  }
+}
+
+// Block for variable setter.
+Blockly.Blocks.variables_set_pVariable = {
+  init: function () {
+    this.appendValueInput('NAME')
+      .setCheck('p:Variable')
+      .appendField('set')
+      .appendField(new Blockly.FieldVariable(
+        'VAR_NAME', null, ['p:Variable'], 'p:Variable'), 'FIELD_NAME')
+      .appendField('to')
+    this.setPreviousStatement(true, null)
+    this.setNextStatement(true, null)
   }
 }

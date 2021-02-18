@@ -40,9 +40,16 @@ function getIdentifiers (graph) {
         .out(ns.p.variables)
         .out()
         .filter(variable => variable.has(ns.rdf.type, ns.p.Variable))
-        .map(variable => ({ name: variable.out(ns.p.name).value, value: variable.out(ns.p.value).value }))
+        .map(variable => ({
+          iri: variable.term.value,
+          name: variable.out(ns.p.name).value,
+          value: variable.out(ns.p.value).value
+        }))
 
-      let vXML = pXML.ele('statement', { name: 'VARIABLES' })
+      let vXML = pXML
+        .ele('value', { name: 'VARIABLES' })
+        .ele('block', { type: 'variables_list' })
+        .ele('statement', { name: 'STACK' })
 
       variables
         .forEach((variable, index, { length: lastIndex }) => {
@@ -50,6 +57,9 @@ function getIdentifiers (graph) {
             .ele('block', { type: 'p:Variable' })
             .ele('field', { name: 'NAME' })
             .txt(variable.name)
+            .up()
+            .ele('data')
+            .txt(variable.iri)
             .up()
             .ele('field', { name: 'VALUE' }).txt(variable.value)
             .up()

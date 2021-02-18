@@ -18,8 +18,24 @@ import BlocklyComponent from './components/BlocklyComponent.vue'
 import './blocks/b59'
 
 import Blockly from 'blockly'
-import BlocklyJS from 'blockly/javascript'
+import BlocklyB59 from './utils/generator'
+import { TypedVariableModal } from '@blockly/plugin-typed-variable-modal'
 import { parseTurtle } from './utils/utils'
+const createFlyout = (workspace) => {
+  let xmlList = []
+  // Add your button and give it a callback name.
+  const button = document.createElement('button')
+  button.setAttribute('text', 'Create Typed Variable')
+  button.setAttribute('callbackKey', 'callbackName')
+
+  xmlList.push(button)
+
+  // This gets all the variables that the user creates and adds them to the
+  // flyout.
+  const blockList = Blockly.VariablesDynamic.flyoutCategoryBlocks(workspace)
+  xmlList = xmlList.concat(blockList)
+  return xmlList
+}
 
 const ttl = `
 @base <http://example.org/pipeline/> .
@@ -73,10 +89,45 @@ const ttl = `
   ] .
 `
 
+const toolbox = `
+<xml>
+  <category name="Pipeline" colour="%{BKY_LOOPS_HUE}">
+    <block type="p:Pipeline">
+      <field name="NAME">my-pipeline</field>
+    </block>
+    <block type="p:Step">
+      <field name="OPERATION">barnard59-base#map</field>
+    </block>
+    <block type="p:Variable">
+      <field name="NAME">url</field>
+      <field name="VALUE">http://worldtimeapi.org/api/timezone/etc/UTC</field>
+    </block>
+    <block type="p:VariableName">
+      <field name="VARIABLENAME">variableName</field>
+    </block>
+    <block type="code:EcmaScript">
+      <field name="ECMASCRIPTCODE">(x) => x * 2</field>
+    </block>
+    <block type="variables_list"></block>
+  </category>
+  <category name="Variables" custom="CREATE_TYPED_VARIABLE" colour="%{BKY_VARIABLES_HUE}">
+  <block type="vars_set">
+    <field name="VAR_SET" variabletype="pVariable"></field>
+  </block>
+  </category>
+</xml>
+`
+
 export default {
   name: 'app',
   components: {
     BlocklyComponent
+  },
+  mounted () {
+    const workspace = this.$refs.main.workspace
+    workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout)
+    const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'pVariable'], ['p:Variable', 'pVariable']])
+    typedVarModal.init()
   },
   data () {
     return {
@@ -90,33 +141,13 @@ export default {
             colour: '#ccc',
             snap: true
           },
-        toolbox:
-        `<xml>
-          <category name="Pipeline" colour="%{BKY_LOOPS_HUE}">
-            <block type="p:Pipeline">
-              <field name="NAME">my-pipeline</field>
-            </block>
-            <block type="p:Step">
-              <field name="OPERATION">barnard59-base#map</field>
-            </block>
-            <block type="p:Variable">
-              <field name="NAME">url</field>
-              <field name="VALUE">http://worldtimeapi.org/api/timezone/etc/UTC</field>
-            </block>
-            <block type="p:VariableName">
-              <field name="VARIABLENAME">variableName</field>
-            </block>
-            <block type="code:EcmaScript">
-              <field name="ECMASCRIPTCODE">(x) => x * 2</field>
-            </block>
-          </category>
-        </xml>`
+        toolbox
       }
     }
   },
   methods: {
     showCode () {
-      this.code = BlocklyJS.workspaceToCode(this.$refs.main.workspace)
+      this.code = BlocklyB59.workspaceToCode(this.$refs.main.workspace)
     },
     toXML () {
       const xmlDom = Blockly.Xml.workspaceToDom(this.$refs.main.workspace)

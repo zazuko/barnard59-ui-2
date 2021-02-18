@@ -10,8 +10,10 @@
     "gh-pages": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
+    "@blockly/plugin-typed-variable-modal": "^3.1.8",
     "@rdfjs/formats-common": "^2.1.0",
     "@rdfjs/namespace": "^1.1.0",
+    "@tpluscode/rdf-string": "^0.2.21",
     "blockly": "^4.20201217.0",
     "clownface": "^1.2.0",
     "core-js": "^3.6.5",

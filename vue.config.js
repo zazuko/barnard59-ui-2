@@ -3,7 +3,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 
 // vue.config.js
 module.exports = {
-  publicPath: 'barnard59-ui',
+  publicPath: './',
   lintOnSave: false,
   devServer: {
     port: 3000
