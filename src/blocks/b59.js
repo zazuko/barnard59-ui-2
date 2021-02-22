@@ -61,54 +61,11 @@ Blockly.Blocks['p:Step'] = {
       .appendField(new Blockly.FieldDropdown(operationDropdown), 'OPERATION')
     this.appendValueInput('ARGUMENTS')
       .appendField('Arguments')
-      .setCheck(['p:VariableName', 'code:EcmaScript'])
+      .setCheck(['p:Variable', 'code:EcmaScript'])
 
     this.setColour(5)
     this.setPreviousStatement(true, ['p:Step'])
     this.setNextStatement(true, ['p:Step'])
-  }
-}
-
-Blockly.Blocks.variables_list = {
-  init () {
-    this.setStyle('list_blocks')
-    this.appendDummyInput()
-      .appendField('variables list')
-    this.setOutput(true, ['variables_list'])
-    this.appendStatementInput('STACK')
-      .setCheck(['p:Variable'])
-    // this.setPreviousStatement(true, ['p:Variable'])
-    this.setNextStatement(true, ['p:Variable'])
-    this.setTooltip(Blockly.Msg.LISTS_CREATE_WITH_CONTAINER_TOOLTIP)
-    this.contextMenu = false
-  }
-}
-
-Blockly.Blocks['p:Variable'] = {
-  init () {
-    this.setColour(150)
-    this.appendDummyInput('Variable')
-      .appendField('Variable')
-    this.appendDummyInput()
-      .appendField('Name')
-      .appendField(new Blockly.FieldTextInput('Name'), 'NAME')
-    this.appendDummyInput()
-      .appendField('Value')
-      .appendField(new Blockly.FieldTextInput('Value'), 'VALUE')
-    this.setPreviousStatement(true, ['p:Variable'])
-    this.setNextStatement(true, ['p:Variable'])
-    this.data = 'variable IRI'
-  }
-}
-
-Blockly.Blocks['p:VariableName'] = {
-  init () {
-    this.setColour(150)
-    this.appendDummyInput()
-      .appendField('Variable')
-      .appendField(new Blockly.FieldTextInput('Variable Name'), 'VARIABLENAME')
-    this.setInputsInline(true)
-    this.setOutput(true, ['p:VariableName'])
   }
 }
 

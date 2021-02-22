@@ -27,6 +27,8 @@ export async function parseTurtle (code) {
 function getIdentifiers (graph) {
   const doc = create().ele('https://developers.google.com/blockly/xml', 'xml')
   const rootVarXML = doc.ele('variables')
+  let lastVariableSetBlock = doc
+  const definedVariableNames = new Set()
 
   graph
     .has(ns.rdf.type, ns.p.Pipeline)
@@ -55,13 +57,22 @@ function getIdentifiers (graph) {
 
       variables
         .forEach((variable, index) => {
+          // make sure each variable is only defined once
+          if (definedVariableNames.has(variable.name)) {
+            return
+          }
+          definedVariableNames.add(variable.name)
+
           rootVarXML.ele('variable', { type: 'p:Variable' }).txt(variable.name)
-          doc.ele('block', { type: 'variables_set_dynamic' })
+          lastVariableSetBlock = lastVariableSetBlock.ele('block', { type: 'variables_set_dynamic' })
             .ele('field', { name: 'VAR', variableType: 'p:Variable' }).txt(variable.name)
             .up()
             .ele('field', { name: 'VALUE' }).txt(variable.value)
             .up()
             .ele('data').txt(variable.iri)
+            .up()
+            .ele('next')
+
           vXML
             .ele('value', { name: `ADD${index}` })
             .ele('block', { type: 'variables_get_dynamic' })
@@ -100,8 +111,8 @@ function getIdentifiers (graph) {
               if (datatype.equals(ns.p.VariableName)) {
                 op
                   .ele('value', { name: 'ARGUMENTS' })
-                  .ele('block', { type: 'p:VariableName' })
-                  .ele('field', { name: 'VARIABLENAME' })
+                  .ele('block', { type: 'variables_get_dynamic' })
+                  .ele('field', { name: 'VAR', variabletype: 'p:Variable' })
                   .txt(arg.term.value)
                   .up()
               } else if (datatype.equals(ns.code.EcmaScript)) {

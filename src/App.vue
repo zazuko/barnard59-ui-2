@@ -2,10 +2,10 @@
   <div id="app">
     <blockly-component id="blockly-workspace" :options="options" ref="main"></blockly-component>
     <div id="code">
-      <button @click="showCode()">Show JavaScript</button>
-      <button @click="toXML()">Show XML</button>
-      <button @click="fromXML()">Load XML</button>
-      <button @click="parseTurtle()">Parse Turtle</button>
+      <button @click="showCode()">Blocks → Turtle</button>
+      <button @click="toXML()">Blocks → XML</button>
+      <button @click="fromXML()" v-show="codeType === 'xml'">XML → Blocks</button>
+      <button @click="parseTurtle()" v-show="codeType === 'ttl'">Turtle → Blocks</button>
       <textarea v-model="code"></textarea>
     </div>
   </div>
@@ -98,13 +98,6 @@ const toolbox = `
     <block type="p:Step">
       <field name="OPERATION">barnard59-base#map</field>
     </block>
-    <block type="p:Variable">
-      <field name="NAME">url</field>
-      <field name="VALUE">http://worldtimeapi.org/api/timezone/etc/UTC</field>
-    </block>
-    <block type="p:VariableName">
-      <field name="VARIABLENAME">variableName</field>
-    </block>
     <block type="code:EcmaScript">
       <field name="ECMASCRIPTCODE">(x) => x * 2</field>
     </block>
@@ -126,10 +119,12 @@ export default {
     workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout)
     const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'p:Variable'], ['p:Variable', 'p:Variable']])
     typedVarModal.init()
+    this.parseTurtle()
   },
   data () {
     return {
       code: ttl,
+      codeType: 'ttl',
       options: {
         media: 'media/',
         grid:
@@ -146,11 +141,13 @@ export default {
   methods: {
     showCode () {
       this.code = BlocklyB59.workspaceToCode(this.$refs.main.workspace)
+      this.codeType = 'ttl'
     },
     toXML () {
       const xmlDom = Blockly.Xml.workspaceToDom(this.$refs.main.workspace)
       const xml = Blockly.Xml.domToPrettyText(xmlDom)
       this.code = xml
+      this.codeType = 'xml'
     },
     fromXML () {
       try {
@@ -166,7 +163,7 @@ export default {
     async parseTurtle () {
       const xml = await parseTurtle(this.code)
       const strXML = xml.end({ prettyPrint: true })
-      console.log(strXML)
+      // console.log(strXML.replace(/ id="[^"]*"/g, ''))
 
       const dom = Blockly.Xml.textToDom(strXML)
       Blockly.mainWorkspace.clear()

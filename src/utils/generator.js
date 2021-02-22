@@ -24,32 +24,75 @@ Object.entries(prefix).forEach(([prefix, iri]) => {
 export default Blockly.B59 = new Blockly.Generator('B59')
 
 Blockly.B59.ORDER_ATOMIC = 0
+Blockly.B59.ORDER_FIRST_PASS = 10
+Blockly.B59.ORDER_SECOND_PASS = 20
+Blockly.B59.ORDER_NONE = 99
+Blockly.B59.RESERVED_WORDS_ = ''
 
-Blockly.B59.init = () => {
+Blockly.B59.init = (workspace) => {
   Blockly.B59.cf = clownface({ dataset: dataset() })
+
+  if (!Blockly.B59.variableDB_) {
+    Blockly.B59.variableDB_ = new Blockly.Names(Blockly.B59.RESERVED_WORDS_)
+  } else {
+    Blockly.B59.variableDB_.reset()
+  }
+
+  Blockly.B59.variableDB_.setVariableMap(workspace.getVariableMap())
+  Blockly.B59.defvars_ = Blockly.Variables.allUsedVarModels(workspace)
 }
 Blockly.B59.finish = (code) => {
   return turtle`${Blockly.B59.cf.dataset}`.toString().replace(/ rdf:type /g, ' a ')
 }
 
 Blockly.B59['p:Pipeline'] = (block) => {
+  const variablesPointer = Blockly.B59.cf.blankNode('variables')
+
   Blockly.B59.cf.namedNode(block.getFieldValue('NAME'))
     .addOut(ns.rdf.type, ns.p.Pipeline)
     .addOut(ns.rdf.type, ns.p.Readable)
+    .addOut(ns.p.variables, variablesPointer)
+
   Blockly.B59.statementToCode(block, 'VARIABLES')
   return ''
 }
 
-Blockly.B59.variables_list = (block) => {
-  Blockly.B59.statementToCode(block, 'STACK')
+Blockly.B59.plists_create_with = (block) => {
+  for (let i = 0; i < block.itemCount_; i++) {
+    Blockly.B59.valueToCode(block, 'ADD' + i, Blockly.B59.ORDER_NONE)
+  }
   return ''
 }
 
-Blockly.B59['p:Variable'] = (block) => {
-  console.log({ data: block.data })
-  Blockly.B59.cf.namedNode(block.data)
-    .addOut(ns.rdf.type, ns.p.Variable)
-    .addOut(ns.p.name, block.getFieldValue('NAME'))
-    .addOut(ns.p.value, block.getFieldValue('VALUE'))
+Blockly.B59.variables_get_dynamic = (block) => {
+  return ''
+}
+
+Blockly.B59.variables_set_dynamic = (block) => {
+  const id = block.getFieldValue('VAR')
+
+  if (/b[0-9]+/.test(block.data)) {
+    const variable = Blockly.B59.variableDB_.variableMap_.variableMap_['p:Variable'].find(({ id_ }) => id_ === id)
+    variable.data = block.data
+    variable.value = block.getFieldValue('VALUE')
+
+    const var1 = Blockly.B59.cf.blankNode()
+      .addOut(ns.rdf.type, ns.p.Variable)
+      .addOut(ns.p.name, variable.name)
+      .addOut(ns.p.value, variable.value)
+    Blockly.B59.cf.blankNode('variables').addOut(ns.p.variable, var1)
+  } else {
+    Blockly.B59.cf.blankNode('variables').addOut(ns.p.variable, Blockly.B59.cf.namedNode(block.data))
+
+    const definedVariable = Blockly.B59.defvars_.find(({ id_ }) => id_ === id)
+    console.log(definedVariable.name)
+    Blockly.B59.cf.namedNode(block.data)
+      .addOut(ns.rdf.type, ns.p.Variable)
+      .addOut(ns.p.name, definedVariable.name)
+      .addOut(ns.p.value, block.getFieldValue('VALUE'))
+  }
+
+  const nextBlock = block.nextConnection && block.nextConnection.targetBlock()
+  Blockly.B59.blockToCode(nextBlock)
   return ''
 }
