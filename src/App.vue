@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <blockly-component id="blockly-workspace" :options="options" ref="main"></blockly-component>
+    <blockly-component
+      v-if="options.toolbox"
+      id="blockly-workspace"
+      :options="options"
+      ref="main" />
     <div id="code">
       <button @click="showCode()">Blocks → Turtle</button>
       <button @click="toXML()">Blocks → XML</button>
@@ -21,6 +25,8 @@ import Blockly from 'blockly'
 import BlocklyB59 from './utils/generator'
 import { TypedVariableModal } from '@blockly/plugin-typed-variable-modal'
 import { parseTurtle } from './utils/utils'
+import { init } from './utils/dynamic-blocks'
+
 const createFlyout = (workspace) => {
   let xmlList = []
   // Add your button and give it a callback name.
@@ -78,29 +84,29 @@ const ttl = `
 
 <parse> a p:Step ;
   code:implementedBy [
-    code:link <node:barnard59-formats#jsonld.parse.object> ;
+    code:link <node:barnard59-formats/jsonld.js#parse.object> ;
     a code:EcmaScript
   ] .
 
 <serialize> a p:Step ;
   code:implementedBy [
-    code:link <node:barnard59-formats#ntriples.serialize> ;
+    code:link <node:barnard59-formats/ntriples.js#serialize> ;
     a code:EcmaScript
   ] .
 `
 
-const toolbox = `
+const toolbox = (stepsXML) => `
 <xml>
   <category name="Pipeline" colour="%{BKY_LOOPS_HUE}">
     <block type="p:Pipeline">
       <field name="NAME">my-pipeline</field>
     </block>
-    <block type="p:Step">
-      <field name="OPERATION">barnard59-base#map</field>
-    </block>
     <block type="code:EcmaScript">
       <field name="ECMASCRIPTCODE">(x) => x * 2</field>
     </block>
+  </category>
+  <category name="Steps" colour="%{BKY_LOOPS_HUE}">
+    ${stepsXML}
   </category>
   <category name="Lists">
     <block type="plists_create_with"></block>
@@ -114,12 +120,16 @@ export default {
   components: {
     BlocklyComponent
   },
-  mounted () {
-    const workspace = this.$refs.main.workspace
-    workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout)
-    const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'p:Variable'], ['p:Variable', 'p:Variable']])
-    typedVarModal.init()
-    this.parseTurtle()
+  async mounted () {
+    const stepsXML = await init()
+    this.options.toolbox = toolbox(stepsXML)
+    setTimeout(() => {
+      const workspace = this.$refs.main.workspace
+      workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout)
+      const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'p:Variable'], ['p:Variable', 'p:Variable']])
+      typedVarModal.init()
+      // this.parseTurtle()
+    }, 1000)
   },
   data () {
     return {
@@ -134,7 +144,10 @@ export default {
             colour: '#ccc',
             snap: true
           },
-        toolbox
+        toolbox: '',
+        rendererOverrides: {
+          ADD_START_HATS: true
+        }
       }
     }
   },

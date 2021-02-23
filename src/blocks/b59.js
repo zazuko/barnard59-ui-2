@@ -1,5 +1,41 @@
 import * as Blockly from 'blockly/core'
 
+Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
+  if (!a.isSuperior()) {
+    [b, a] = [a, b]
+  }
+  const checkArrayOne = a.getCheck()
+  // if (a.sourceBlock_._dynamicBlock) checkArrayOne.push(...a.sourceBlock_._pipeTypes)
+  const checkArrayTwo = b.getCheck()
+  // if (b.sourceBlock_._dynamicBlock) checkArrayOne.push(...b.sourceBlock_._pipeTypes)
+
+  if (!checkArrayOne || !checkArrayTwo) {
+    // One or both sides are promiscuous enough that anything will fit.
+    return true
+  }
+  // Find any intersection in the check lists.
+  for (let i = 0; i < checkArrayOne.length; i++) {
+    if (checkArrayTwo.includes(checkArrayOne[i])) {
+      return true
+    }
+  }
+  if (!a.sourceBlock_._dynamicBlock) return false
+  if (!b.sourceBlock_._dynamicBlock) return false
+
+  const aPipe = a.sourceBlock_._pipeTypes
+  const bPipe = b.sourceBlock_._pipeTypes
+  if (
+    (aPipe.includes('p:Readable') && bPipe.includes('p:Writable')) ||
+    (aPipe.includes('p:ReadableObjectMode') && bPipe.includes('p:WritableObjectMode'))
+  ) {
+    return true
+  }
+
+  return false
+}
+
+// Blockly.ConnectionChecker.prototype.doTypeChecks
+
 Blockly.Blocks['p:Pipeline'] = {
   init () {
     this.appendDummyInput()
@@ -10,62 +46,13 @@ Blockly.Blocks['p:Pipeline'] = {
       .setCheck(['Array'])
       .appendField('variables')
     this.appendStatementInput('STEPLIST')
-      .setCheck(['p:Step'])
+      // .setCheck(['p:Step'])
       .appendField('steps')
     this.setColour(230)
     this.setTooltip('hey')
     this.setHelpUrl('https://example.com')
     this.setPreviousStatement(true, ['p:Pipeline'])
     this.setNextStatement(true, ['p:Pipeline'])
-  }
-}
-
-Blockly.Blocks['p:Step'] = {
-  init () {
-    // easy to extract from manifest.ttls
-    const operations = [
-      'barnard59-formats#csvw.parse',
-      'barnard59-formats#jsonld.parse',
-      'barnard59-formats#jsonld.parse.object',
-      'barnard59-formats#jsonld.serialize',
-      'barnard59-formats#n3.parse',
-      'barnard59-formats#ntriples.serialize',
-      'barnard59-formats#rdfxml.parse',
-      'barnard59-shell#after',
-      'barnard59-shell#before',
-      'barnard59-shell#shell',
-      'barnard59-base#combine',
-      'barnard59-base#concat',
-      'barnard59-base#concat.object',
-      'barnard59-base#filter',
-      'barnard59-base#flatten',
-      'barnard59-base#glob',
-      'barnard59-base#json.parse',
-      'barnard59-base#json.stringify',
-      'barnard59-base#limit',
-      'barnard59-base#map',
-      'barnard59-base#nul',
-      'barnard59-base#offset',
-      'barnard59-base#stdout',
-      'barnard59-base#toString'
-    ]
-    const operationDropdown = operations.map((operation) => {
-      const [lib, fn] = operation.split('#')
-      return [`${fn} (${lib})`, operation]
-    })
-    this.appendDummyInput()
-      .appendField('Step')
-      .appendField(new Blockly.FieldTextInput('Name'), 'NAME')
-    this.appendDummyInput()
-      .appendField('Operation')
-      .appendField(new Blockly.FieldDropdown(operationDropdown), 'OPERATION')
-    this.appendValueInput('ARGUMENTS')
-      .appendField('Arguments')
-      .setCheck(['p:Variable', 'code:EcmaScript'])
-
-    this.setColour(5)
-    this.setPreviousStatement(true, ['p:Step'])
-    this.setNextStatement(true, ['p:Step'])
   }
 }
 
@@ -84,8 +71,7 @@ Blockly.Blocks.variables_get_dynamic = {
   init () {
     this.setColour(150)
     this.appendDummyInput()
-      .appendField(new Blockly.FieldVariable(
-        'VAR_NAME', null, ['p:Variable'], 'p:Variable'), 'VAR')
+      .appendField(new Blockly.FieldVariable('VAR_NAME', null, ['p:Variable'], 'p:Variable'), 'VAR')
     this.setOutput(true, 'p:Variable')
   }
 }
@@ -98,8 +84,7 @@ Blockly.Blocks.variables_set_dynamic = {
       .appendField('Variable')
     this.appendDummyInput()
       .appendField('Name')
-      .appendField(new Blockly.FieldVariable(
-        'VAR_NAME', null, ['p:Variable'], 'p:Variable'), 'VAR')
+      .appendField(new Blockly.FieldVariable('VAR_NAME', null, ['p:Variable'], 'p:Variable'), 'VAR')
     this.appendDummyInput()
       .appendField('Value')
       .appendField(new Blockly.FieldTextInput('Value'), 'VALUE')

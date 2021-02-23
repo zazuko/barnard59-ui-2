@@ -54,6 +54,7 @@ Blockly.B59['p:Pipeline'] = (block) => {
     .addOut(ns.p.variables, variablesPointer)
 
   Blockly.B59.statementToCode(block, 'VARIABLES')
+  Blockly.B59.statementToCode(block, 'STEPLIST')
   return ''
 }
 
@@ -85,7 +86,7 @@ Blockly.B59.variables_set_dynamic = (block) => {
     Blockly.B59.cf.blankNode('variables').addOut(ns.p.variable, Blockly.B59.cf.namedNode(block.data))
 
     const definedVariable = Blockly.B59.defvars_.find(({ id_ }) => id_ === id)
-    console.log(definedVariable.name)
+
     Blockly.B59.cf.namedNode(block.data)
       .addOut(ns.rdf.type, ns.p.Variable)
       .addOut(ns.p.name, definedVariable.name)
@@ -95,4 +96,9 @@ Blockly.B59.variables_set_dynamic = (block) => {
   const nextBlock = block.nextConnection && block.nextConnection.targetBlock()
   Blockly.B59.blockToCode(nextBlock)
   return ''
+}
+
+Blockly.B59['code:EcmaScript'] = (block) => {
+  const value = block.getFieldValue('ECMASCRIPTCODE')
+  return [value, Blockly.B59.ORDER_NONE]
 }

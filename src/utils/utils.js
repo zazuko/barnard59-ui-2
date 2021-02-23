@@ -2,6 +2,7 @@ import cf from 'clownface'
 import formats from '@rdfjs/formats-common'
 import namespace from '@rdfjs/namespace'
 import rdf from 'rdf-ext'
+import fetch from '@rdfjs/fetch-lite'
 import stringToStream from 'string-to-stream'
 import { create } from 'xmlbuilder2'
 const parser = formats.parsers.get('text/turtle')
@@ -21,10 +22,22 @@ export async function turtleToCF (str) {
 
 export async function parseTurtle (code) {
   const cf = await turtleToCF(code)
-  return getIdentifiers(cf)
+  return turtleToXML(cf)
 }
 
-function getIdentifiers (graph) {
+export async function rdfFetch (url) {
+  return new Promise((resolve, reject) =>
+    fetch(url, { formats })
+      .then(res => resolve(res.quadStream()))
+      .catch(err => reject(err))
+  )
+}
+
+export async function urlToCF (url) {
+  return cf({ dataset: await rdf.dataset().import(await rdfFetch(url)) })
+}
+
+function turtleToXML (graph) {
   const doc = create().ele('https://developers.google.com/blockly/xml', 'xml')
   const rootVarXML = doc.ele('variables')
   let lastVariableSetBlock = doc
@@ -90,18 +103,18 @@ function getIdentifiers (graph) {
         .forEach((step, index, { length: lastIndex }) => {
           const implementedBy = step.out(ns.code.implementedBy)
           const codeLink = implementedBy.out(ns.code.link)
-          const identifier = codeLink.term
+          // const identifier = codeLink.term
           const args = Array.from(step.out(ns.code.arguments).list())
 
-          const [, ...operationParts] = identifier.value.split(':')
-          const operationName = operationParts.join(':')
+          // const [, ...operationParts] = identifier.value.split(':')
+          // const operationName = operationParts.join(':')
           sXML = sXML
-            .ele('block', { type: 'p:Step' })
+            .ele('block', { type: codeLink.term.value })
             .ele('field', { name: 'NAME' })
             .txt(step.term.value)
-            .up()
-            .ele('field', { name: 'OPERATION' })
-            .txt(operationName)
+            // .up()
+            // .ele('field', { name: 'OPERATION' })
+            // .txt(operationName)
             .up()
 
           const op = sXML

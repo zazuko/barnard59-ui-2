@@ -1,3 +1,4 @@
+
 @base <http://example.org/pipeline/> .
 @prefix code: <https://code.described.at/> .
 @prefix p: <https://pipeline.described.at/> .
@@ -10,20 +11,14 @@
       p:name "url" ;
       p:value "http://worldtimeapi.org/api/timezone/etc/UTC" ;
     ] ,
-    <dateContext1>,
-    <dateContext2>
+    <dateContext>
   ] ;
   p:steps <steps> .
 
-<dateContext1>
+<dateContext>
   a p:Variable;
   p:name "context" ;
-  p:value """{"date\":"http://purl.org/dc/elements/1.1/date"}""" .
-
-<dateContext2>
-  a p:Variable;
-  p:name "context 2" ;
-  p:value """{"date\":"http://purl.org/dc/elements/1.1/date"}""" .
+  p:value """{"date":"http://purl.org/dc/elements/1.1/date"}""" .
 
 <steps>
   p:stepList ( <fetch> <jsonldStructure> <parse> <serialize> ) .
@@ -44,12 +39,12 @@
 
 <parse> a p:Step ;
   code:implementedBy [
-    code:link <node:barnard59-formats#jsonld.parse.object> ;
+    code:link <node:barnard59-formats/jsonld.js#parse.object> ;
     a code:EcmaScript
   ] .
 
 <serialize> a p:Step ;
   code:implementedBy [
-    code:link <node:barnard59-formats#ntriples.serialize> ;
+    code:link <node:barnard59-formats/ntriples.js#serialize> ;
     a code:EcmaScript
   ] .
