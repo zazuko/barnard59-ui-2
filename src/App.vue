@@ -43,6 +43,75 @@ const createFlyout = (workspace) => {
   return xmlList
 }
 
+const initialXML = `
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable type="p:Variable" id="cqOvQEKG$PtcEH,6--T}">url</variable>
+    <variable type="p:Variable" id="aV*QED{Isj6,*xt.cY~l">context</variable>
+  </variables>
+  <block type="variables_set_dynamic" id="I4]ysTdyG6AZ0]uv^FI)" x="10" y="10">
+    <field name="VAR" id="cqOvQEKG$PtcEH,6--T}" variabletype="p:Variable">url</field>
+    <field name="VALUE">http://worldtimeapi.org/api/timezone/etc/UTC</field>
+    <data>b42</data>
+    <next>
+      <block type="variables_set_dynamic" id="vyH?-/_[b%0Zy)XQvHU!">
+        <field name="VAR" id="aV*QED{Isj6,*xt.cY~l" variabletype="p:Variable">context</field>
+        <field name="VALUE">{"date":"http://purl.org/dc/elements/1.1/date"}</field>
+        <data>http://example.org/pipeline/dateContext</data>
+      </block>
+    </next>
+  </block>
+  <block type="p:Pipeline" id="G+r1P}-Yuk}7G+E{qpt(" x="12" y="212">
+    <field name="NAME">http://example.org/pipeline/utc</field>
+    <value name="VARIABLES">
+      <block type="plists_create_with" id="s}8[L$_jYKK?%NL!=vN0">
+        <mutation items="2"></mutation>
+        <value name="ADD0">
+          <block type="variables_get_dynamic" id="@s@$Z7CN1%3]W=^qi5W:">
+            <field name="VAR" id="cqOvQEKG$PtcEH,6--T}" variabletype="p:Variable">url</field>
+          </block>
+        </value>
+        <value name="ADD1">
+          <block type="variables_get_dynamic" id=".@$]=Xyk]+Tw6xqLfNw!">
+            <field name="VAR" id="aV*QED{Isj6,*xt.cY~l" variabletype="p:Variable">context</field>
+          </block>
+        </value>
+      </block>
+    </value>
+    <statement name="STEPLIST">
+      <block type="node:barnard59-base#fetch.json" id="8c(GOV~4a64Q[p*do(BB">
+        <field name="NAME">http://example.org/pipeline/fetch</field>
+        <value name="ARGUMENTS">
+          <block type="variables_get_dynamic" id=";$j9Y2Ab-(KV$b+=Sg;H">
+            <field name="VAR" id="cqOvQEKG$PtcEH,6--T}" variabletype="p:Variable">url</field>
+          </block>
+        </value>
+        <next>
+          <block type="node:barnard59-base#map" id=".r,bLmVxIuconnhY1][k">
+            <field name="NAME">http://example.org/pipeline/jsonldStructure</field>
+            <value name="ARGUMENTS">
+              <block type="code:EcmaScript" id="Uhp;6{xm]YV5cpsYWb9n">
+                <field name="ECMASCRIPTCODE">json =&gt; { return { '@context': JSON.parse(this.variables.get('context')), '@id': this.variables.get('url'), date: json.datetime } }</field>
+              </block>
+            </value>
+            <next>
+              <block type="node:barnard59-formats/jsonld.js#parse.object" id="_-j!x=~47,.irA|t1dJ:">
+                <field name="NAME">http://example.org/pipeline/parse</field>
+                <next>
+                  <block type="node:barnard59-formats/ntriples.js#serialize" id="3)N*!WmEx+K2L{ObU?3P">
+                    <field name="NAME">http://example.org/pipeline/serialize</field>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
+`
+
 const ttl = `
 @base <http://example.org/pipeline/> .
 @prefix code: <https://code.described.at/> .
@@ -128,8 +197,8 @@ export default {
       workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout)
       const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [['p:Variable', 'p:Variable'], ['p:Variable', 'p:Variable']])
       typedVarModal.init()
-      // this.parseTurtle()
-    }, 1000)
+      this.fromXML(initialXML)
+    }, 400)
   },
   data () {
     return {
@@ -162,9 +231,9 @@ export default {
       this.code = xml
       this.codeType = 'xml'
     },
-    fromXML () {
+    fromXML (xml) {
       try {
-        const dom = Blockly.Xml.textToDom(this.code)
+        const dom = Blockly.Xml.textToDom(xml || this.code)
         Blockly.mainWorkspace.clear()
         Blockly.Xml.domToWorkspace(dom, this.$refs.main.workspace)
         return true
