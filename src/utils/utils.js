@@ -14,10 +14,25 @@ const ns = {
   code: namespace('https://code.described.at/')
 }
 
+export async function findBase (str) {
+  const match = str.match(/^\s*@base\s+<([^>]+)>\s*\./mi)
+  if (match) {
+    return match[1]
+  }
+  return ''
+}
+
 export async function turtleToCF (str) {
   const stream = stringToStream(str)
   const quadStream = parser.import(stream)
-  return cf({ dataset: await rdf.dataset().import(quadStream) })
+  const graph = cf({ dataset: await rdf.dataset().import(quadStream) })
+  const base = await findBase(str)
+  if (!base) {
+    return graph
+  }
+  graph.namedNode(ns.p.parsedPipeline)
+    .addOut(ns.p.hasBase, base)
+  return graph
 }
 
 export async function parseTurtle (code) {
@@ -38,6 +53,9 @@ export async function urlToCF (url) {
 }
 
 function turtleToXML (graph) {
+  const baseQuad = graph.has(ns.p.hasBase)
+  const base = baseQuad.term ? baseQuad.out().value : ''
+
   const doc = create().ele('https://developers.google.com/blockly/xml', 'xml')
   const rootVarXML = doc.ele('variables')
   let lastVariableSetBlock = doc
@@ -61,6 +79,14 @@ function turtleToXML (graph) {
           name: variable.out(ns.p.name).value,
           value: variable.out(ns.p.value).value
         }))
+
+      if (base) {
+        variables.push({
+          iri: '@base',
+          name: '@base',
+          value: base
+        })
+      }
 
       const vXML = pXML
         .ele('value', { name: 'VARIABLES' })
@@ -103,24 +129,21 @@ function turtleToXML (graph) {
         .forEach((step, index, { length: lastIndex }) => {
           const implementedBy = step.out(ns.code.implementedBy)
           const codeLink = implementedBy.out(ns.code.link)
-          // const identifier = codeLink.term
-          const args = Array.from(step.out(ns.code.arguments).list())
+          const args = Array.from(step.out(ns.code.arguments).toArray())
 
-          // const [, ...operationParts] = identifier.value.split(':')
-          // const operationName = operationParts.join(':')
           sXML = sXML
             .ele('block', { type: codeLink.term.value })
             .ele('field', { name: 'NAME' })
             .txt(step.term.value)
-            // .up()
-            // .ele('field', { name: 'OPERATION' })
-            // .txt(operationName)
             .up()
 
           const op = sXML
           args
             .forEach((arg) => {
               const datatype = arg.term.datatype
+              if (!datatype) {
+                return
+              }
               if (datatype.equals(ns.p.VariableName)) {
                 op
                   .ele('value', { name: 'ARGUMENTS' })

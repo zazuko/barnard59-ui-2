@@ -46,12 +46,14 @@ Blockly.B59.finish = (code) => {
 }
 
 Blockly.B59['p:Pipeline'] = (block) => {
+  const pipelineIRI = block.getFieldValue('NAME')
   const variablesPointer = Blockly.B59.cf.blankNode('variables')
 
-  Blockly.B59.cf.namedNode(block.getFieldValue('NAME'))
+  Blockly.B59.cf.namedNode(pipelineIRI)
     .addOut(ns.rdf.type, ns.p.Pipeline)
     .addOut(ns.rdf.type, ns.p.Readable)
     .addOut(ns.p.variables, variablesPointer)
+    .addOut(ns.p.steps, Blockly.B59.cf.namedNode(`${pipelineIRI}/steps`))
 
   Blockly.B59.statementToCode(block, 'VARIABLES')
   Blockly.B59.statementToCode(block, 'STEPLIST')
@@ -82,7 +84,7 @@ Blockly.B59.variables_set_dynamic = (block) => {
       .addOut(ns.p.name, variable.name)
       .addOut(ns.p.value, variable.value)
     Blockly.B59.cf.blankNode('variables').addOut(ns.p.variable, var1)
-  } else {
+  } else if (block.data !== '@base') {
     Blockly.B59.cf.blankNode('variables').addOut(ns.p.variable, Blockly.B59.cf.namedNode(block.data))
 
     const definedVariable = Blockly.B59.defvars_.find(({ id_ }) => id_ === id)

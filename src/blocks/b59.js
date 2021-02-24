@@ -110,7 +110,7 @@ Blockly.Blocks.plists_create_with = {
    * @this {Blockly.Block}
    */
   mutationToDom () {
-    var container = Blockly.utils.xml.createElement('mutation')
+    const container = Blockly.utils.xml.createElement('mutation')
     container.setAttribute('items', this.itemCount_)
     return container
   },
@@ -147,17 +147,17 @@ Blockly.Blocks.plists_create_with = {
    * @this {Blockly.Block}
    */
   compose (containerBlock) {
-    var itemBlock = containerBlock.getInputTargetBlock('STACK')
+    let itemBlock = containerBlock.getInputTargetBlock('STACK')
     // Count number of inputs.
-    var connections = []
+    const connections = []
     while (itemBlock && !itemBlock.isInsertionMarker()) {
       connections.push(itemBlock.valueConnection_)
       itemBlock = itemBlock.nextConnection &&
           itemBlock.nextConnection.targetBlock()
     }
     // Disconnect any children that don't belong.
-    for (var i = 0; i < this.itemCount_; i++) {
-      var connection = this.getInput('ADD' + i).connection.targetConnection
+    for (let i = 0; i < this.itemCount_; i++) {
+      const connection = this.getInput('ADD' + i).connection.targetConnection
       if (connection && !connections.includes(connection)) {
         connection.disconnect()
       }
@@ -165,7 +165,7 @@ Blockly.Blocks.plists_create_with = {
     this.itemCount_ = connections.length
     this.updateShape_()
     // Reconnect any child blocks.
-    for (var i = 0; i < this.itemCount_; i++) {
+    for (let i = 0; i < this.itemCount_; i++) {
       Blockly.Mutator.reconnect(connections[i], this, 'ADD' + i)
     }
   },
@@ -175,10 +175,10 @@ Blockly.Blocks.plists_create_with = {
    * @this {Blockly.Block}
    */
   saveConnections (containerBlock) {
-    var itemBlock = containerBlock.getInputTargetBlock('STACK')
-    var i = 0
+    let itemBlock = containerBlock.getInputTargetBlock('STACK')
+    let i = 0
     while (itemBlock) {
-      var input = this.getInput('ADD' + i)
+      const input = this.getInput('ADD' + i)
       itemBlock.valueConnection_ = input && input.connection.targetConnection
       i++
       itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock()
@@ -197,9 +197,10 @@ Blockly.Blocks.plists_create_with = {
         .appendField(Blockly.Msg.LISTS_CREATE_EMPTY_TITLE)
     }
     // Add new inputs.
-    for (var i = 0; i < this.itemCount_; i++) {
+    let i = 0
+    for (; i < this.itemCount_; i++) {
       if (!this.getInput('ADD' + i)) {
-        var input = this.appendValueInput('ADD' + i)
+        const input = this.appendValueInput('ADD' + i)
           .setAlign(Blockly.ALIGN_RIGHT)
         if (i === 0) {
           input.appendField(Blockly.Msg.LISTS_CREATE_WITH_INPUT_WITH)

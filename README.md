@@ -39,4 +39,4 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 * We'd need customizing how connections look to make it visually clear which step can connect to which other step, color coding won't cut it because 1 block = 1 color
 * Turtle generation via Clownface/rdf-string is great conceptually but generating readable turtle might be more work than stringifying as we go
-
+* Turtle is a leaky format, there's no way of going from ttl to triples back to ttl without losing information
