@@ -112,11 +112,13 @@ function turtleToXML (graph) {
             .up()
             .ele('next')
 
-          vXML
-            .ele('value', { name: `ADD${index}` })
-            .ele('block', { type: 'variables_get_dynamic' })
-            .ele('field', { name: 'VAR', variabletype: 'p:Variable' })
-            .txt(variable.name)
+          if (variable.name !== '@base') {
+            vXML
+              .ele('value', { name: `ADD${index}` })
+              .ele('block', { type: 'variables_get_dynamic' })
+              .ele('field', { name: 'VAR', variabletype: 'p:Variable' })
+              .txt(variable.name)
+          }
         })
 
       const steps = Array.from(pipeline
