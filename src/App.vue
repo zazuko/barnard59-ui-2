@@ -20,6 +20,7 @@
 import './style.css'
 import BlocklyComponent from './components/BlocklyComponent.vue'
 import './blocks/b59'
+import './blocks/lists'
 
 import Blockly from 'blockly'
 import BlocklyB59 from './utils/generator'
