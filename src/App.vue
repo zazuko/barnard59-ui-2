@@ -21,6 +21,7 @@ import './style.css'
 import BlocklyComponent from './components/BlocklyComponent.vue'
 import './blocks/b59'
 import './blocks/lists'
+import './renderer'
 
 import Blockly from 'blockly'
 import BlocklyB59 from './utils/generator'
@@ -215,9 +216,7 @@ export default {
             snap: true
           },
         toolbox: '',
-        rendererOverrides: {
-          ADD_START_HATS: true
-        }
+        renderer: 'custom_renderer'
       }
     }
   },

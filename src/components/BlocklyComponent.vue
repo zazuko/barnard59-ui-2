@@ -20,7 +20,7 @@ export default {
     }
   },
   mounted () {
-    var options = this.$props.options || {}
+    const options = this.$props.options || {}
     if (!options.toolbox) {
       options.toolbox = this.$refs['workspace-toolbox']
     }

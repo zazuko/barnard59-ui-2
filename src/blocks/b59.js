@@ -5,9 +5,7 @@ Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
     [b, a] = [a, b]
   }
   const checkArrayOne = a.getCheck()
-  // if (a.sourceBlock_._dynamicBlock) checkArrayOne.push(...a.sourceBlock_._pipeTypes)
   const checkArrayTwo = b.getCheck()
-  // if (b.sourceBlock_._dynamicBlock) checkArrayOne.push(...b.sourceBlock_._pipeTypes)
 
   if (!checkArrayOne || !checkArrayTwo) {
     // One or both sides are promiscuous enough that anything will fit.
@@ -34,8 +32,6 @@ Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
   return false
 }
 
-// Blockly.ConnectionChecker.prototype.doTypeChecks
-
 Blockly.Blocks['p:Pipeline'] = {
   init () {
     this.appendDummyInput()
@@ -46,7 +42,6 @@ Blockly.Blocks['p:Pipeline'] = {
       .setCheck(['Array'])
       .appendField('variables')
     this.appendStatementInput('STEPLIST')
-      // .setCheck(['p:Step'])
       .appendField('steps')
     this.setColour(230)
     this.setTooltip('hey')

@@ -135,10 +135,11 @@ Blockly.Blocks.plists_create_with = {
         }
       }
       if (emptyFields.length > 1) {
-        for (let i = emptyFields.length - 1; i > 0; i--) {
-          this.removeInput('ADD' + i)
+        emptyFields.reverse()
+        emptyFields.forEach((field) => {
+          this.removeInput('ADD' + field)
           this.itemCount_--
-        }
+        })
         this.updateShape_()
       }
     }
