@@ -113,11 +113,6 @@ Blockly.Blocks.plists_create_with = {
         }
       }
     }
-    // Remove deleted inputs.
-    while (this.getInput('ADD' + i)) {
-      this.removeInput('ADD' + i)
-      i++
-    }
   },
 
   onchange () {
@@ -125,23 +120,6 @@ Blockly.Blocks.plists_create_with = {
     if (this.allInputsFilled()) {
       this.itemCount_++
       this.updateShape_()
-    } else {
-      // remove empty slots until only one is left
-      const emptyFields = []
-      for (let i = 0; i < this.itemCount_; i++) {
-        const p = this.getInput('ADD' + i)
-        if (!p.connection.targetConnection) {
-          emptyFields.push(i)
-        }
-      }
-      if (emptyFields.length > 1) {
-        emptyFields.reverse()
-        emptyFields.forEach((field) => {
-          this.removeInput('ADD' + field)
-          this.itemCount_--
-        })
-        this.updateShape_()
-      }
     }
   }
 }

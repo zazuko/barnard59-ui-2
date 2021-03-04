@@ -67,7 +67,7 @@ const initialXML = `
     <field name="NAME">http://example.org/pipeline/utc</field>
     <value name="VARIABLES">
       <block type="plists_create_with" id="s}8[L$_jYKK?%NL!=vN0">
-        <mutation items="2"></mutation>
+        <mutation items="3"></mutation>
         <value name="ADD0">
           <block type="variables_get_dynamic" id="@s@$Z7CN1%3]W=^qi5W:">
             <field name="VAR" id="cqOvQEKG$PtcEH,6--T}" variabletype="p:Variable">url</field>
@@ -84,16 +84,26 @@ const initialXML = `
       <block type="node:barnard59-base#fetch.json" id="8c(GOV~4a64Q[p*do(BB">
         <field name="NAME">http://example.org/pipeline/fetch</field>
         <value name="ARGUMENTS">
-          <block type="variables_get_dynamic" id=";$j9Y2Ab-(KV$b+=Sg;H">
-            <field name="VAR" id="cqOvQEKG$PtcEH,6--T}" variabletype="p:Variable">url</field>
+          <block type="plists_create_with" id="J$Cgv7IfbZ9@GH,t};[=">
+            <mutation items="2"></mutation>
+            <value name="ADD0">
+              <block type="variables_get_dynamic" id=";$j9Y2Ab-(KV$b+=Sg;H">
+                <field name="VAR" id="cqOvQEKG$PtcEH,6--T}" variabletype="p:Variable">url</field>
+              </block>
+            </value>
           </block>
         </value>
         <next>
           <block type="node:barnard59-base#map" id=".r,bLmVxIuconnhY1][k">
             <field name="NAME">http://example.org/pipeline/jsonldStructure</field>
             <value name="ARGUMENTS">
-              <block type="code:EcmaScript" id="Uhp;6{xm]YV5cpsYWb9n">
-                <field name="ECMASCRIPTCODE">json =&gt; { return { '@context': JSON.parse(this.variables.get('context')), '@id': this.variables.get('url'), date: json.datetime } }</field>
+              <block type="plists_create_with" id="0vaX$4/][m]%^[37/k}x">
+                <mutation items="2"></mutation>
+                <value name="ADD0">
+                  <block type="code:EcmaScript" id="Uhp;6{xm]YV5cpsYWb9n">
+                    <field name="ECMASCRIPTCODE">json =&gt; { return { '@context': JSON.parse(this.variables.get('context')), '@id': this.variables.get('url'), date: json.datetime } }</field>
+                  </block>
+                </value>
               </block>
             </value>
             <next>

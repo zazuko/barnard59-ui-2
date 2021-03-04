@@ -67,7 +67,7 @@ Blockly.Blocks.variables_get_dynamic = {
     this.setColour(150)
     this.appendDummyInput()
       .appendField(new Blockly.FieldVariable('VAR_NAME', null, ['p:Variable'], 'p:Variable'), 'VAR')
-    this.setOutput(true, 'p:Variable')
+    this.setOutput(true, ['p:Variable'])
   }
 }
 

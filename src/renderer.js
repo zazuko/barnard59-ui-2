@@ -22,13 +22,45 @@ const notches = {
   OBJECT: notch({ width: 0, height: 10, peak: 15 })
 }
 
+const puzzles = {
+  LIST: puzzle({ width: 10, height: 20, peak: 10 }),
+  NORMAL: puzzle({ width: 8, height: 15, peak: 10 })
+}
+
 function puzzle (params) {
+  const { width, height, peak } = Object.assign({ width: 8, height: 15, peak: 10 }, params)
+  const half = height / 2
   return {
     type: 1,
-    width: 8,
-    height: 15,
-    pathDown: ' c 0,10  -8,-8  -8,7.5  s 8,-2.5  8,7.5 ',
-    pathUp: ' c 0,-10  -8,8  -8,-7.5  s 8,2.5  8,-7.5 '
+    width: width,
+    height: height,
+    pathDown: ` c 0,${peak}  -${width},-${width}  -${width},${half}  s ${width},-${peak - half}  ${width},${half} `,
+    pathUp: ` c 0,-${peak}  -${width},${width}  -${width},-${half}  s ${width},${peak - half}  ${width},-${half} `
+  }
+}
+
+function inputPuzzleFor (block) {
+  if (isDynamicBlock(block)) {
+    return puzzles.LIST
+  }
+  switch (block.type) {
+    case 'p:Pipeline':
+      return puzzles.LIST
+    default:
+      return puzzles.NORMAL
+  }
+}
+
+function outputPuzzleFor (block) {
+  if (isDynamicBlock(block)) {
+    return puzzles.LIST
+  }
+  switch (block.type) {
+    case 'p:Pipeline':
+    case 'plists_create_with':
+      return puzzles.LIST
+    default:
+      return puzzles.NORMAL
   }
 }
 
@@ -67,8 +99,9 @@ class CustomConstantsProvider extends Blockly.blockRendering.ConstantProvider {
 
     switch (connection.type) {
       case Blockly.INPUT_VALUE:
+        return inputPuzzleFor(connection.sourceBlock_)
       case Blockly.OUTPUT_VALUE:
-        return this.PUZZLE_TAB
+        return outputPuzzleFor(connection.sourceBlock_)
       case Blockly.PREVIOUS_STATEMENT:
         if (connection.sourceBlock_) {
           if (isDynamic) {
@@ -90,18 +123,9 @@ class CustomConstantsProvider extends Blockly.blockRendering.ConstantProvider {
             return outputNotchFor(connection.sourceBlock_)
           }
           if (isPipeline) {
-            let children = connection.sourceBlock_.getChildren(true)
-            let lastChild = children[children.length - 1]
-            let lastDynamicBlock = isDynamicBlock(lastChild) ? lastChild : null
-            while (children && lastChild) {
-              children = lastChild.getChildren(true)
-              lastChild = children[children.length - 1]
-              if (!lastChild || !isDynamicBlock(lastChild)) {
-                break
-              }
-              lastDynamicBlock = lastChild
-            }
-
+            const children = connection.sourceBlock_.getDescendants(true)
+            const lastChild = children[children.length - 1]
+            const lastDynamicBlock = isDynamicBlock(lastChild) ? lastChild : null
             if (lastDynamicBlock) {
               return outputNotchFor(lastDynamicBlock)
             }
