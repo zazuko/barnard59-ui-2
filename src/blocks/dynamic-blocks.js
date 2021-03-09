@@ -76,7 +76,7 @@ export async function init () {
             const isReadableObjectMode = operation.has(ns.rdf.type, ns.p.ReadableObjectMode).values.length
             const isWritableObjectMode = operation.has(ns.rdf.type, ns.p.WritableObjectMode).values.length
 
-            const previousStatement = ['p:Pipeline']
+            const previousStatement = []
             if (isWritable) {
               previousStatement.push('p:Readable')
               this._pipeTypes.push('p:Writable')

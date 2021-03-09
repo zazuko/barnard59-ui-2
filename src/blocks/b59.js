@@ -1,11 +1,56 @@
 import * as Blockly from 'blockly/core'
 
+function isDynamicBlock (block) {
+  return !!block?._dynamicBlock
+}
+
+const typeCheckDynamicBlocks = (a, b, log = false) => {
+  if (!a._dynamicBlock) return false
+  if (!b._dynamicBlock) return false
+
+  const aPipe = a._pipeTypes
+  const bPipe = b._pipeTypes
+  if (aPipe.includes('p:Readable') && bPipe.includes('p:Writable')) {
+    return true
+  }
+  if (aPipe.includes('p:ReadableObjectMode') && bPipe.includes('p:WritableObjectMode')) {
+    return true
+  }
+
+  return false
+}
+
 Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
   if (!a.isSuperior()) {
     [b, a] = [a, b]
   }
   const checkArrayOne = a.getCheck()
   const checkArrayTwo = b.getCheck()
+
+  // connecting pipelines needs custom logic because their "type"
+  // is based on their first and last step
+  if (a.sourceBlock_.type === 'p:Pipeline') {
+    const dynamicA = a.sourceBlock_.getDescendants(true).filter(isDynamicBlock)
+    if (dynamicA.length) {
+      const lastFromPipelineA = dynamicA[dynamicA.length - 1]
+      const dynamicB = b.sourceBlock_.getChildren(true).filter(isDynamicBlock)
+      if (dynamicB.length) {
+        const firstFromPipelineB = dynamicB[0]
+
+        if (lastFromPipelineA.id === firstFromPipelineB.id) {
+          return false
+        }
+
+        return typeCheckDynamicBlocks(lastFromPipelineA, firstFromPipelineB)
+      } else {
+        // cannot pipe a pipeline into an empty pipeline
+        return false
+      }
+    } else if (b.sourceBlock_.type === 'p:Pipeline') {
+      // cannot pipe a pipeline from an empty pipeline
+      return false
+    }
+  }
 
   if (!checkArrayOne || !checkArrayTwo) {
     // One or both sides are promiscuous enough that anything will fit.
@@ -17,19 +62,8 @@ Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
       return true
     }
   }
-  if (!a.sourceBlock_._dynamicBlock) return false
-  if (!b.sourceBlock_._dynamicBlock) return false
 
-  const aPipe = a.sourceBlock_._pipeTypes
-  const bPipe = b.sourceBlock_._pipeTypes
-  if (
-    (aPipe.includes('p:Readable') && bPipe.includes('p:Writable')) ||
-    (aPipe.includes('p:ReadableObjectMode') && bPipe.includes('p:WritableObjectMode'))
-  ) {
-    return true
-  }
-
-  return false
+  return typeCheckDynamicBlocks(a.sourceBlock_, b.sourceBlock_)
 }
 
 Blockly.Blocks['p:Pipeline'] = {
