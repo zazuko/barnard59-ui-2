@@ -61,6 +61,16 @@ Blockly.Blocks['code:EcmaScript'] = {
   }
 }
 
+Blockly.Blocks['code:EcmaScriptTemplateLiteral'] = {
+  init () {
+    this.appendDummyInput()
+      .appendField('Template Literal')
+      .appendField(new Blockly.FieldTextInput('Code'), 'ECMASCRIPTCODE')
+    this.setInputsInline(true)
+    this.setOutput(true, ['code:EcmaScriptTemplateLiteral'])
+  }
+}
+
 // Block for variable getter.
 Blockly.Blocks.variables_get_dynamic = {
   init () {

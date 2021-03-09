@@ -26,8 +26,8 @@ import './renderer'
 import Blockly from 'blockly'
 import BlocklyB59 from './utils/generator'
 import { TypedVariableModal } from '@blockly/plugin-typed-variable-modal'
+import { init } from './blocks/dynamic-blocks'
 import { parseTurtle } from './utils/utils'
-import { init } from './utils/dynamic-blocks'
 
 const createFlyout = (workspace) => {
   let xmlList = []
@@ -184,6 +184,9 @@ const toolbox = (stepsXML) => `
     </block>
     <block type="code:EcmaScript">
       <field name="ECMASCRIPTCODE">(x) => x * 2</field>
+    </block>
+    <block type="code:EcmaScriptTemplateLiteral">
+      <field name="ECMASCRIPTCODE">Date is \${new Date().toISOString()}</field>
     </block>
   </category>
   <category name="Steps" colour="%{BKY_LOOPS_HUE}">

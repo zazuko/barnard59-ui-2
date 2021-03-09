@@ -1,8 +1,9 @@
 import namespace from '@rdfjs/namespace'
-import { urlToCF } from './utils'
+import { urlToCF } from '../utils/utils'
 import * as Blockly from 'blockly/core'
 
 const manifestsFiles = [
+  'manifest-generic.ttl',
   'manifest-barnard59-base.ttl',
   'manifest-barnard59-core.ttl',
   'manifest-barnard59-csvw.ttl',
@@ -47,8 +48,16 @@ export async function init () {
             this._dynamicBlock = true
             this._pipeTypes = ['p:Step']
 
-            this.appendDummyInput()
-              .appendField(`${label} (${lib})`)
+            if (blockName === 'node:generic') {
+              this.appendDummyInput()
+                .appendField(`${label}`)
+              this.appendDummyInput()
+                .appendField('Operation')
+                .appendField(new Blockly.FieldTextInput('Operation'), 'OPERATION')
+            } else {
+              this.appendDummyInput()
+                .appendField(`${label} (${lib})`)
+            }
 
             this.appendDummyInput()
               .appendField('Step')
@@ -56,7 +65,7 @@ export async function init () {
 
             this.appendValueInput('ARGUMENTS')
               .appendField('Arguments')
-              .setCheck(['p:Variable', 'code:EcmaScript', 'Array'])
+              .setCheck(['p:Variable', 'code:EcmaScript', 'code:EcmaScriptTemplateLiteral', 'Array'])
 
             this.setColour((185 + i * 30) % 360)
             this.setTooltip(operation.out(ns.rdfs.comment).term.value)
@@ -103,11 +112,12 @@ const stepTemplate = (blockName) => (block) => {
     .addOut(ns.code.link, Blockly.B59.cf.namedNode(blockName))
     .addOut(ns.rdf.type, ns.code.EcmaScript)
 
-  const meat = Blockly.B59.cf.namedNode(name)
+  const step = Blockly.B59.cf.namedNode(name)
     .addOut(ns.rdf.type, ns.p.Step)
     .addOut(ns.code.implementedBy, implementedBy)
+
   if (Blockly.B59.valueToCode(block, 'ARGUMENTS', Blockly.B59.ORDER_NONE)) {
-    meat.addList(ns.code.arguments, [
+    step.addList(ns.code.arguments, [
       Blockly.B59.cf.literal(Blockly.B59.valueToCode(block, 'ARGUMENTS', Blockly.B59.ORDER_NONE))
     ])
   }

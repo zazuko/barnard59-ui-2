@@ -1,3 +1,4 @@
+import Blockly from 'blockly'
 import cf from 'clownface'
 import formats from '@rdfjs/formats-common'
 import namespace from '@rdfjs/namespace'
@@ -133,35 +134,73 @@ function turtleToXML (graph) {
           const codeLink = implementedBy.out(ns.code.link)
           const args = Array.from(step.out(ns.code.arguments).toArray())
 
-          sXML = sXML
-            .ele('block', { type: codeLink.term.value })
-            .ele('field', { name: 'NAME' })
-            .txt(step.term.value)
-            .up()
+          let dynamicBlockType = codeLink.term.value
+          const isGeneric = !Blockly.Blocks[dynamicBlockType]
+          const stepName = step.term.value
 
-          const op = sXML
-          args
-            .forEach((arg) => {
-              const datatype = arg.term.datatype
+          // step does not have manifest definition
+          if (isGeneric) {
+            dynamicBlockType = 'node:generic'
+          }
+
+          sXML = sXML
+            .ele('block', { type: dynamicBlockType })
+            .ele('field', { name: 'NAME' })
+            .txt(stepName)
+            .up()
+          if (isGeneric) {
+            sXML = sXML
+              .ele('field', { name: 'OPERATION' })
+              .txt(codeLink.term.value)
+              .up()
+          }
+
+          const argsContent = args
+            .map((arg) => {
+              if (arg?.term?.termType === 'BlankNode') {
+                [arg] = arg.out().terms
+              }
+              arg = arg.term || arg
+              const datatype = arg.datatype
               if (!datatype) {
                 return
               }
               if (datatype.equals(ns.p.VariableName)) {
-                op
-                  .ele('value', { name: 'ARGUMENTS' })
-                  .ele('block', { type: 'variables_get_dynamic' })
-                  .ele('field', { name: 'VAR', variabletype: 'p:Variable' })
-                  .txt(arg.term.value)
-                  .up()
-              } else if (datatype.equals(ns.code.EcmaScript)) {
-                op
-                  .ele('value', { name: 'ARGUMENTS' })
-                  .ele('block', { type: 'code:EcmaScript' })
-                  .ele('field', { name: 'ECMASCRIPTCODE' })
-                  .txt(arg.term.value)
-                  .up()
+                const block = { type: 'variables_get_dynamic' }
+                const field = { name: 'VAR', variabletype: 'p:Variable' }
+                const val = arg.value
+                return { block, field, val }
               }
+              if (datatype.equals(ns.code.EcmaScript)) {
+                const block = { type: 'code:EcmaScript' }
+                const field = { name: 'ECMASCRIPTCODE' }
+                const val = arg.value
+                return { block, field, val }
+              }
+              if (datatype.equals(ns.code.EcmaScriptTemplateLiteral)) {
+                const block = { type: 'code:EcmaScriptTemplateLiteral' }
+                const field = { name: 'ECMASCRIPTCODE' }
+                const val = arg.value
+                return { block, field, val }
+              }
+            }).filter(Boolean)
+
+          if (argsContent.length) {
+            const argsList = sXML
+              .ele('value', { name: 'ARGUMENTS' })
+              .ele('block', { type: 'plists_create_with' })
+              .ele('mutation', { items: `${argsContent.length}` })
+              .up()
+
+            argsContent.forEach(({ block, field, val }, i) => {
+              argsList
+                .ele('value', { name: `ADD${i}` })
+                .ele('block', block)
+                .ele('field', field)
+                .txt(val)
             })
+          }
+
           if (index < lastIndex - 1) {
             sXML = sXML.ele('next')
           }
