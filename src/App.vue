@@ -6,10 +6,12 @@
       :options="options"
       ref="main" />
     <div id="code">
-      <button @click="showCode()">Blocks → Turtle</button>
-      <button @click="toXML()">Blocks → XML</button>
-      <button @click="fromXML()" v-show="codeType === 'xml'">XML → Blocks</button>
-      <button @click="parseTurtle()" v-show="codeType === 'ttl'">Turtle → Blocks</button>
+      <div id="buttons">
+        <button @click="showCode()">Blocks → Turtle</button>
+        <button @click="toXML()">Blocks → XML</button>
+        <button @click="fromXML()" v-show="codeType === 'xml'">XML → Blocks</button>
+        <button @click="parseTurtle()" v-show="codeType === 'ttl'">Turtle → Blocks</button>
+      </div>
       <textarea v-model="code"></textarea>
     </div>
   </div>
