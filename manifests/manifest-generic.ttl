@@ -1,0 +1,11 @@
+@base <http://barnard59.zazuko.com/operations/core/> .
+@prefix code: <https://code.described.at/> .
+@prefix p: <https://pipeline.described.at/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<generic> a p:Operation, p:Readable, p:ReadableObjectMode, p:Writable, p:WritableObjectMode;
+  rdfs:label "Generic";
+  rdfs:comment "";
+  code:implementedBy [ a code:EcmaScript;
+    code:link <node:generic>
+  ].
