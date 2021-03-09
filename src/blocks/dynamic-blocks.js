@@ -70,26 +70,35 @@ export async function init () {
             this.setColour((185 + i * 30) % 360)
             this.setTooltip(operation.out(ns.rdfs.comment).term.value)
             this.setHelpUrl(operation.term.value)
+
             const isReadable = operation.has(ns.rdf.type, ns.p.Readable).values.length
             const isWritable = operation.has(ns.rdf.type, ns.p.Writable).values.length
             const isReadableObjectMode = operation.has(ns.rdf.type, ns.p.ReadableObjectMode).values.length
             const isWritableObjectMode = operation.has(ns.rdf.type, ns.p.WritableObjectMode).values.length
 
+            const previousStatement = ['p:Pipeline']
             if (isWritable) {
-              this.setPreviousStatement(true, ['p:Pipeline', 'p:Readable'])
+              previousStatement.push('p:Readable')
               this._pipeTypes.push('p:Writable')
-            } else if (isWritableObjectMode) {
-              this.setPreviousStatement(true, ['p:Pipeline', 'p:ReadableObjectMode'])
-              this._pipeTypes.push('p:WritableObjectMode')
-            } else {
-              this.setPreviousStatement(true, ['p:Pipeline'])
             }
+            if (isWritableObjectMode) {
+              previousStatement.push('p:ReadableObjectMode')
+              this._pipeTypes.push('p:WritableObjectMode')
+            }
+            this.setPreviousStatement(true, previousStatement)
+
+            const nextStatement = []
             if (isReadable) {
-              this.setNextStatement(true, ['p:Writable'])
+              nextStatement.push('p:Writable')
               this._pipeTypes.push('p:Readable')
-            } else if (isReadableObjectMode) {
-              this.setNextStatement(true, ['p:WritableObjectMode'])
+            }
+            if (isReadableObjectMode) {
+              nextStatement.push('p:WritableObjectMode')
               this._pipeTypes.push('p:ReadableObjectMode')
+            }
+
+            if (nextStatement.length) {
+              this.setNextStatement(true, nextStatement)
             }
           }
         }

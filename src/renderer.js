@@ -65,6 +65,9 @@ function outputPuzzleFor (block) {
 }
 
 function inputNotchFor (block) {
+  if (block.type === 'p:Pipeline') {
+    return notches.NONE
+  }
   if (block._pipeTypes.includes('p:Writable')) {
     return notches.NORMAL
   }
@@ -75,6 +78,9 @@ function inputNotchFor (block) {
 }
 
 function outputNotchFor (block) {
+  if (block.type === 'p:Pipeline') {
+    return notches.NONE
+  }
   if (block._pipeTypes.includes('p:Readable')) {
     return notches.NORMAL
   }
@@ -91,6 +97,7 @@ function isDynamicBlock (block) {
 class CustomConstantsProvider extends Blockly.blockRendering.ConstantProvider {
   shapeFor (connection) {
     const isPipeline = connection.sourceBlock_.type === 'p:Pipeline'
+    const isGeneric = connection.sourceBlock_.type === 'node:generic'
     const isDynamic = isDynamicBlock(connection.sourceBlock_)
     const pipelineNotchOverStep = !connection.check_ && connection.sourceBlock_?.nextConnection?.check_?.includes('p:Pipeline')
     if (pipelineNotchOverStep) {
@@ -105,6 +112,9 @@ class CustomConstantsProvider extends Blockly.blockRendering.ConstantProvider {
       case Blockly.PREVIOUS_STATEMENT:
         if (connection.sourceBlock_) {
           if (isDynamic) {
+            if (isGeneric && connection.targetConnection?.sourceBlock_) {
+              return outputNotchFor(connection.targetConnection.sourceBlock_)
+            }
             return inputNotchFor(connection.sourceBlock_)
           }
           if (isPipeline) {
@@ -120,6 +130,9 @@ class CustomConstantsProvider extends Blockly.blockRendering.ConstantProvider {
       case Blockly.NEXT_STATEMENT:
         if (connection.sourceBlock_) {
           if (isDynamic) {
+            if (isGeneric && connection.targetConnection?.sourceBlock_) {
+              return inputNotchFor(connection.targetConnection.sourceBlock_)
+            }
             return outputNotchFor(connection.sourceBlock_)
           }
           if (isPipeline) {
