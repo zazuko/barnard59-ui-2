@@ -62,9 +62,11 @@ function turtleToXML (graph) {
   let lastVariableSetBlock = doc
   const definedVariableNames = new Set()
 
+  const pipelines = []
   graph
     .has(ns.rdf.type, ns.p.Pipeline)
     .forEach(pipeline => {
+      pipelines.push(pipeline.value)
       const pXML = doc
         .ele('block', { type: 'p:Pipeline' })
         .ele('field', { name: 'NAME' })
@@ -206,6 +208,5 @@ function turtleToXML (graph) {
           }
         })
     })
-
-  return doc
+  return [doc, pipelines]
 }
