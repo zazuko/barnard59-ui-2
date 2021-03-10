@@ -136,7 +136,7 @@ class CustomConstantsProvider extends Blockly.blockRendering.ConstantProvider {
             return outputNotchFor(connection.sourceBlock_)
           }
           if (isPipeline) {
-            const children = connection.sourceBlock_.getDescendants(true).filter(isDynamicBlock)
+            const children = connection.sourceBlock_.getChildren(true).filter(isDynamicBlock)
             const lastChild = children[children.length - 1]
             const lastDynamicBlock = isDynamicBlock(lastChild) ? lastChild : null
             if (lastDynamicBlock) {

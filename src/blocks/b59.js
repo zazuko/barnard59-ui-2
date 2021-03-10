@@ -4,7 +4,7 @@ function isDynamicBlock (block) {
   return !!block?._dynamicBlock
 }
 
-const typeCheckDynamicBlocks = (a, b, log = false) => {
+const typeCheckDynamicBlocks = (a, b) => {
   if (!a._dynamicBlock) return false
   if (!b._dynamicBlock) return false
 
@@ -20,37 +20,32 @@ const typeCheckDynamicBlocks = (a, b, log = false) => {
   return false
 }
 
-Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
+Blockly.ConnectionChecker.prototype.doTypeChecks = function (a, b) {
   if (!a.isSuperior()) {
     [b, a] = [a, b]
   }
-  const checkArrayOne = a.getCheck()
-  const checkArrayTwo = b.getCheck()
 
   // connecting pipelines needs custom logic because their "type"
   // is based on their first and last step
-  if (a.sourceBlock_.type === 'p:Pipeline') {
+  if (a.sourceBlock_.type === 'p:Pipeline' && b.sourceBlock_.type === 'p:Pipeline') {
     const dynamicA = a.sourceBlock_.getDescendants(true).filter(isDynamicBlock)
     if (dynamicA.length) {
       const lastFromPipelineA = dynamicA[dynamicA.length - 1]
-      const dynamicB = b.sourceBlock_.getChildren(true).filter(isDynamicBlock)
-      if (dynamicB.length) {
-        const firstFromPipelineB = dynamicB[0]
+      const firstFromPipelineB = b.sourceBlock_.getChildren(true).map(({ id, _dynamicBlock, _pipeTypes }) => ({ id, _dynamicBlock, _pipeTypes }))[0]
 
+      if (firstFromPipelineB) {
         if (lastFromPipelineA.id === firstFromPipelineB.id) {
           return false
         }
 
         return typeCheckDynamicBlocks(lastFromPipelineA, firstFromPipelineB)
-      } else {
-        // cannot pipe a pipeline into an empty pipeline
-        return false
       }
-    } else if (b.sourceBlock_.type === 'p:Pipeline') {
-      // cannot pipe a pipeline from an empty pipeline
-      return false
+      return true
     }
   }
+
+  const checkArrayOne = a.getCheck()
+  const checkArrayTwo = b.getCheck()
 
   if (!checkArrayOne || !checkArrayTwo) {
     // One or both sides are promiscuous enough that anything will fit.
@@ -63,7 +58,10 @@ Blockly.ConnectionChecker.prototype.doTypeChecks = (a, b) => {
     }
   }
 
-  return typeCheckDynamicBlocks(a.sourceBlock_, b.sourceBlock_)
+  if (isDynamicBlock(a.sourceBlock_) && isDynamicBlock(b.sourceBlock_)) {
+    return typeCheckDynamicBlocks(a.sourceBlock_, b.sourceBlock_)
+  }
+  return false
 }
 
 Blockly.Blocks['p:Pipeline'] = {
